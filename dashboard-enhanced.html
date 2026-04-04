@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Habit Tracker Pro - Enhanced Dashboard</title>
+    <!-- Chart.js for visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* Primary Colors */
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --primary-light: #818cf8;
+
+            /* Status Colors */
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #0ea5e9;
+
+            /* Grayscale */
+            --bg-primary: #ffffff;
+            --bg-secondary: #f9fafb;
+            --bg-tertiary: #f3f4f6;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --text-tertiary: #9ca3af;
+            --border-color: #e5e7eb;
+
+            /* Shadows */
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+
+            /* Spacing */
+            --spacing-xs: 0.25rem;
+            --spacing-sm: 0.5rem;
+            --spacing-md: 1rem;
+            --spacing-lg: 1.5rem;
+            --spacing-xl: 2rem;
+            --spacing-2xl: 3rem;
+
+            /* Transitions */
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: var(--spacing-xl);
+        }
+
+        body.dark-mode {
+            --bg-primary: #1f2937;
+            --bg-secondary: #111827;
+            --bg-tertiary: #374151;
+            --text-primary: #f9fafb;
+            --text-secondary: #d1d5db;
+            --text-tertiary: #9ca3af;
+            --border-color: #374151;
+            background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
+        }
+
+        /* ===== HEADER ===== */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-2xl);
+        }
+
+        .header-title h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--info) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .header-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: var(--spacing-md);
+        }
+
+        .btn {
+            padding: var(--spacing-sm) var(--spacing-lg);
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.85rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-color);
+        }
+
+        /* ===== DASHBOARD GRID ===== */
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-2xl);
+        }
+
+        .dashboard-full {
+            grid-column: 1 / -1;
+        }
+
+        /* ===== CARD COMPONENT ===== */
+        .card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-4px);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-lg);
+            padding-bottom: var(--spacing-md);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .card-icon {
+            font-size: 1.3rem;
+        }
+
+        /* ===== STAT CARDS ===== */
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-2xl);
+        }
+
+        .stat-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: var(--spacing-lg);
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            border-top: 4px solid var(--primary);
+        }
+
+        .stat-card.success {
+            border-top-color: var(--success);
+        }
+
+        .stat-card.warning {
+            border-top-color: var(--warning);
+        }
+
+        .stat-card.danger {
+            border-top-color: var(--danger);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--info) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-change {
+            font-size: 0.75rem;
+            margin-top: var(--spacing-sm);
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: 6px;
+            display: inline-block;
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--success);
+            font-weight: 600;
+        }
+
+        .stat-change.negative {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+
+        /* ===== PROGRESS INDICATORS ===== */
+        .progress-ring-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: var(--spacing-lg) 0;
+        }
+
+        .progress-ring-wrapper {
+            position: relative;
+            width: 120px;
+            height: 120px;
+        }
+
+        .progress-ring {
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+
+        .progress-ring-circle {
+            fill: none;
+            stroke: var(--border-color);
+            stroke-width: 8;
+        }
+
+        .progress-ring-circle.fill {
+            stroke: var(--primary);
+            transition: stroke-dashoffset 0.5s ease;
+            stroke-linecap: round;
+        }
+
+        .progress-ring-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .progress-ring-label {
+            text-align: center;
+            margin-top: var(--spacing-md);
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        /* ===== LINEAR PROGRESS BAR ===== */
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: var(--spacing-md) 0;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--info) 100%);
+            transition: width 0.4s ease;
+            border-radius: 4px;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            margin-bottom: var(--spacing-sm);
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        /* ===== CHART CONTAINERS ===== */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .chart-container.tall {
+            height: 400px;
+        }
+
+        /* ===== LIST ITEMS ===== */
+        .list {
+            list-style: none;
+        }
+
+        .list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--spacing-md) 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .list-item:last-child {
+            border-bottom: none;
+        }
+
+        .list-item-label {
+            flex: 1;
+            font-weight: 500;
+        }
+
+        .list-item-value {
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .list-item-badge {
+            display: inline-block;
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-left: var(--spacing-md);
+        }
+
+        .badge-success {
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--success);
+        }
+
+        .badge-warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+
+        .badge-danger {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+
+        /* ===== HEATMAP ===== */
+        .heatmap {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: var(--spacing-sm);
+            margin-top: var(--spacing-lg);
+        }
+
+        .heatmap-cell {
+            aspect-ratio: 1;
+            border-radius: 6px;
+            background: var(--bg-tertiary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            border: 1px solid var(--border-color);
+        }
+
+        .heatmap-cell:hover {
+            transform: scale(1.1);
+        }
+
+        .heatmap-cell.low {
+            background: rgba(34, 197, 94, 0.2);
+            color: var(--success);
+        }
+
+        .heatmap-cell.medium {
+            background: rgba(34, 197, 94, 0.5);
+            color: var(--success);
+        }
+
+        .heatmap-cell.high {
+            background: rgba(34, 197, 94, 0.8);
+            color: white;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .dashboard-container {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: var(--spacing-lg);
+            }
+
+            .header-title h1 {
+                font-size: 1.5rem;
+            }
+
+            .stat-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .card {
+                padding: var(--spacing-md);
+            }
+        }
+
+        /* ===== THEME TOGGLE ===== */
+        .theme-toggle {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            width: 50px;
+            height: 28px;
+            border-radius: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            padding: 2px;
+            transition: var(--transition);
+        }
+
+        .theme-toggle-circle {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--bg-primary);
+            transition: var(--transition);
+        }
+
+        .theme-toggle:hover {
+            background: var(--border-color);
+        }
+
+        /* ===== LOADING STATE ===== */
+        .skeleton {
+            background: linear-gradient(90deg, var(--bg-tertiary) 0%, var(--bg-secondary) 50%, var(--bg-tertiary) 100%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+
+        @keyframes loading {
+            0% {
+                background-position: 200% 0;
+            }
+
+            100% {
+                background-position: -200% 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-title">
+            <h1>📊 Habit Tracker Pro</h1>
+            <p class="header-subtitle">Your comprehensive habit analytics dashboard</p>
+        </div>
+        <div class="header-controls">
+            <button class="btn btn-secondary" onclick="toggleTheme()">🌙 Dark Mode</button>
+            <button class="btn btn-primary" onclick="refreshData()">↻ Refresh</button>
+        </div>
+    </div>
+
+    <!-- Key Statistics -->
+    <div class="stat-grid" id="statGrid">
+        <div class="stat-card">
+            <div class="stat-value" id="totalHabits">0</div>
+            <div class="stat-label">Total Habits</div>
+            <div class="stat-change">All time</div>
+        </div>
+        <div class="stat-card success">
+            <div class="stat-value" id="avgCompletion">0%</div>
+            <div class="stat-label">Avg Completion</div>
+            <div class="stat-change">Last 30 days</div>
+        </div>
+        <div class="stat-card warning">
+            <div class="stat-value" id="currentStreak">0</div>
+            <div class="stat-label">Current Streak</div>
+            <div class="stat-change">Days</div>
+        </div>
+        <div class="stat-card danger">
+            <div class="stat-value" id="totalHoursSlept">0</div>
+            <div class="stat-label">Sleep Hours</div>
+            <div class="stat-change">Last 7 days avg</div>
+        </div>
+    </div>
+
+    <!-- Main Dashboard Grid -->
+    <div class="dashboard-container">
+        <!-- Weekly Habits Trend (Time-Series) -->
+        <div class="card dashboard-full">
+            <div class="card-header">
+                <div class="card-title">
+                    <span class="card-icon">📈</span>
+                    Habit Completion Trends (Last 30 Days)
+                </div>
+            </div>
+            <div class="chart-container tall">
+                <canvas id="trendChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Habit Completion Comparison (Bar Chart) -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <span class="card-icon">📊</span>
+                    Habit Comparison
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="comparisonChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Habit Breakdown (Pie Chart) -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <span class="card-icon">🥧</span>
+                    Category Breakdown
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="breakdownChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Performance Gauge -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <span class="card-icon">⭐</span>
+                    Overall Performance
+                </div>
+            </div>
+            <div class="progress-ring-container">
+                <div class="progress-ring-wrapper">
+                    <svg class="progress-ring" width="120" height="120">
+                        <circle class="progress-ring-circle" cx="60" cy="60" r="54">
+                        </circle>
+                        <circle class="progress-ring-circle fill" cx="60" cy="60" r="54" id="performanceRing"
+                            style="stroke-dasharray: 339.29; stroke-dashoffset: 0;">
+                        </circle>
+                    </svg>
+                    <div class="progress-ring-text" id="performancePercent">85%</div>
+                </div>
+            </div>
+            <div class="progress-ring-label">Excellence Score</div>
+        </div>
+
+        <!-- Daily Progress -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <span class="card-icon">✅</span>
+                    Today's Progress
+                </div>
+            </div>
+            <div id="dailyProgress">
+                <div style="margin-bottom: var(--spacing-lg);">
+                    <div class="progress-label">
+                        <span>Habits Completed</span>
+                        <span id="dailyCount">0/0</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-bar-fill" id="dailyBar" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Habits -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <span class="card-icon">🏆</span>
+                    Top Performing Habits
+                </div>
+            </div>
+            <ul class="list" id="topHabits">
+                <li class="list-item">
+                    <span class="list-item-label">Morning Exercise</span>
+                    <span class="list-item-value">95%</span>
+                </li>
+                <li class="list-item">
+                    <span class="list-item-label">Reading</span>
+                    <span class="list-item-value">88%</span>
+                </li>
+                <li class="list-item">
+                    <span class="list-item-label">Meditation</span>
+                    <span class="list-item-value">76%</span>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Sleep Quality Analysis -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <span class="card-icon">😴</span>
+                    Sleep Quality Distribution
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="sleepChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Activity Heatmap -->
+        <div class="card dashboard-full">
+            <div class="card-header">
+                <div class="card-title">
+                    <span class="card-icon">🔥</span>
+                    Last 28 Days Activity Heatmap
+                </div>
+            </div>
+            <div class="heatmap" id="activityHeatmap">
+                <!-- Generated by JS -->
+            </div>
+        </div>
+
+        <!-- Weekly Summary -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <span class="card-icon">📅</span>
+                    This Week
+                </div>
+            </div>
+            <ul class="list" id="weeklySummary">
+                <li class="list-item">
+                    <span class="list-item-label">Monday</span>
+                    <span class="list-item-value" style="display: flex; gap: var(--spacing-sm); align-items: center;">
+                        5/6 <span class="list-item-badge badge-success">83%</span>
+                    </span>
+                </li>
+                <li class="list-item">
+                    <span class="list-item-label">Tuesday</span>
+                    <span class="list-item-value" style="display: flex; gap: var(--spacing-sm); align-items: center;">
+                        4/6 <span class="list-item-badge badge-warning">67%</span>
+                    </span>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Consistency Score -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <span class="card-icon">📍</span>
+                    Consistency Score
+                </div>
+            </div>
+            <div style="text-align: center; padding: var(--spacing-lg) 0;">
+                <div style="font-size: 3rem; font-weight: 800; color: var(--primary); margin-bottom: var(--spacing-md);"
+                    id="consistencyScore">87</div>
+                <div class="progress-bar">
+                    <div class="progress-bar-fill" style="width: 87%"></div>
+                </div>
+                <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: var(--spacing-md);">You're on
+                    fire! Keep it up! 🔥</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DATA FETCHING =====
+        const API_BASE = 'http://localhost:3001/api';
+        let charts = {};
+        let analyticsData = null;
+
+        async function fetchAnalytics() {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${API_BASE}/analytics/dashboard`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to fetch analytics');
+
+                analyticsData = await response.json();
+                console.log('Analytics Data:', analyticsData);
+                return analyticsData.data || analyticsData;
+            } catch (error) {
+                console.error('Error fetching analytics:', error);
+                // Return mock data for demonstration
+                return getMockData();
+            }
+        }
+
+        function getMockData() {
+            return {
+                totalHabits: 6,
+                avgCompletionRate: 85.3,
+                currentStreak: 12,
+                sleepStats: { avgHours: 6.8 },
+                habitStats: [
+                    { habit: 'Morning Exercise', completion_rate: 95 },
+                    { habit: 'Reading', completion_rate: 88 },
+                    { habit: 'Meditation', completion_rate: 76 },
+                    { habit: 'Journaling', completion_rate: 82 },
+                    { habit: 'Coding Practice', completion_rate: 90 }
+                ],
+                dailyBreakdown: {
+                    completed: 4,
+                    total: 6
+                }
+            };
+        }
+
+        // ===== UI UPDATES =====
+        function updateStatistics(data) {
+            document.getElementById('totalHabits').textContent = data.totalHabits || 0;
+            document.getElementById('avgCompletion').textContent = Math.round(data.avgCompletionRate || 0) + '%';
+            document.getElementById('currentStreak').textContent = data.currentStreak || 0;
+            document.getElementById('totalHoursSlept').textContent = (data.sleepStats?.avgHours || 0).toFixed(1);
+
+            const performancePercent = Math.round(data.avgCompletionRate || 0);
+            document.getElementById('performancePercent').textContent = performancePercent + '%';
+
+            // Update performance ring
+            const circle = document.getElementById('performanceRing');
+            const radius = 54;
+            const circumference = 2 * Math.PI * radius;
+            const offset = circumference - (performancePercent / 100) * circumference;
+            circle.style.strokeDashoffset = offset;
+
+            const daily = data.dailyBreakdown || { completed: 0, total: 0 };
+            document.getElementById('dailyCount').textContent = `${daily.completed}/${daily.total}`;
+            const dailyPercent = daily.total > 0 ? (daily.completed / daily.total) * 100 : 0;
+            document.getElementById('dailyBar').style.width = dailyPercent + '%';
+
+            document.getElementById('consistencyScore').textContent = performancePercent;
+        }
+
+        function updateTopHabits(habits) {
+            const sorted = (habits || []).sort((a, b) =>
+                parseFloat(b.completion_rate || 0) - parseFloat(a.completion_rate || 0)
+            ).slice(0, 5);
+
+            const html = sorted.map(habit => `
+                <li class="list-item">
+                    <span class="list-item-label">${habit.habit}</span>
+                    <span class="list-item-value">${Math.round(parseFloat(habit.completion_rate || 0))}%</span>
+                </li>
+            `).join('');
+
+            document.getElementById('topHabits').innerHTML = html;
+        }
+
+        function generateActivityHeatmap() {
+            const container = document.getElementById('activityHeatmap');
+            const days = [];
+
+            for (let i = 27; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                const intensity = Math.floor(Math.random() * 3); // 0, 1, 2
+                const intensityClass = intensity === 0 ? 'low' : intensity === 1 ? 'medium' : 'high';
+                const day = Math.random() > 0.3 ? Math.ceil((intensity + 1) * 2) : '0';
+
+                days.push(`<div class="heatmap-cell ${intensityClass}" title="Day ${28 - i}: ${day} habits">${day}</div>`);
+            }
+
+            container.innerHTML = days.join('');
+        }
+
+        // ===== CHART INITIALIZATION =====
+        function initCharts(data) {
+            // Destroy existing charts
+            Object.values(charts).forEach(chart => chart?.destroy?.());
+            charts = {};
+
+            // Trend Chart
+            charts.trend = new Chart(document.getElementById('trendChart'), {
+                type: 'line',
+                data: {
+                    labels: ['Day 1', 'Day 5', 'Day 10', 'Day 15', 'Day 20', 'Day 25', 'Day 30'],
+                    datasets: (data.habitStats || []).slice(0, 3).map((habit, idx) => ({
+                        label: habit.habit,
+                        data: [
+                            Math.random() * 40 + 50,
+                            Math.random() * 40 + 50,
+                            Math.random() * 40 + 50,
+                            Math.random() * 40 + 50,
+                            Math.random() * 40 + 50,
+                            Math.random() * 40 + 50,
+                            Math.random() * 40 + 50
+                        ],
+                        borderColor: ['#6366f1', '#0ea5e9', '#22c55e'][idx],
+                        backgroundColor: ['rgba(99,102,241,0.05)', 'rgba(14,165,233,0.05)', 'rgba(34,197,94,0.05)'][idx],
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 5,
+                        pointBackgroundColor: ['#6366f1', '#0ea5e9', '#22c55e'][idx],
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
+                    }))
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: { callback: value => value + '%' }
+                        }
+                    }
+                }
+            });
+
+            // Comparison Chart
+            charts.comparison = new Chart(document.getElementById('comparisonChart'), {
+                type: 'bar',
+                data: {
+                    labels: (data.habitStats || []).map(h => h.habit),
+                    datasets: [{
+                        label: 'Completion Rate (%)',
+                        data: (data.habitStats || []).map(h => parseFloat(h.completion_rate || 0)),
+                        backgroundColor: [
+                            '#6366f1', '#0ea5e9', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6'
+                        ],
+                        borderRadius: 8,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            max: 100,
+                            ticks: { callback: value => value + '%' }
+                        }
+                    }
+                }
+            });
+
+            // Breakdown Chart
+            const habitNames = (data.habitStats || []).map(h => h.habit);
+            const completionRates = (data.habitStats || []).map(h => parseFloat(h.completion_rate || 0));
+
+            charts.breakdown = new Chart(document.getElementById('breakdownChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: habitNames,
+                    datasets: [{
+                        data: completionRates,
+                        backgroundColor: [
+                            '#6366f1', '#0ea5e9', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6'
+                        ],
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+
+            // Sleep Quality Chart
+            charts.sleep = new Chart(document.getElementById('sleepChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['Poor', 'Fair', 'Good', 'Excellent'],
+                    datasets: [{
+                        label: 'Days',
+                        data: [2, 4, 12, 12],
+                        backgroundColor: ['#ef4444', '#f59e0b', '#22c55e', '#0ea5e9'],
+                        borderRadius: 8,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        // ===== THEME TOGGLE =====
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+
+            // Re-init charts with new theme
+            if (analyticsData) {
+                initCharts(analyticsData);
+            }
+        }
+
+        // ===== REFRESH DATA =====
+        async function refreshData() {
+            const data = await fetchAnalytics();
+            updateStatistics(data);
+            updateTopHabits(data.habitStats || []);
+            generateActivityHeatmap();
+            initCharts(data);
+        }
+
+        // ===== INITIALIZATION =====
+        async function init() {
+            // Load theme preference
+            if (localStorage.getItem('theme') === 'dark') {
+                document.body.classList.add('dark-mode');
+            }
+
+            // Load data and render
+            analyticsData = await fetchAnalytics();
+            updateStatistics(analyticsData);
+            updateTopHabits(analyticsData.habitStats || []);
+            generateActivityHeatmap();
+            initCharts(analyticsData);
+
+            // Refresh data periodically (every 30 seconds)
+            setInterval(refreshData, 30000);
+        }
+
+        // Start on load
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    </script>
+</body>
+
+</html>
