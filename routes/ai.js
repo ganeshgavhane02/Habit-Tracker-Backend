@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../config/database');
-const auth = require('../middleware/auth');
+const { auth, optionalAuth } = require('../middleware/auth');
 
 /**
  * AI CHAT ROUTES
@@ -15,7 +15,7 @@ const chatHistories = {};
  * POST /api/ai/chat
  * Send a message to AI assistant and get a response
  */
-router.post('/chat', auth.optional, async (req, res) => {
+router.post('/chat', optionalAuth, async (req, res) => {
     try {
         const { message, context = {} } = req.body;
         const userId = req.user?.id || 'anonymous';
@@ -74,7 +74,7 @@ router.post('/chat', auth.optional, async (req, res) => {
  * GET /api/ai/chat/history
  * Get chat history for authenticated user
  */
-router.get('/chat/history', auth.required, async (req, res) => {
+router.get('/chat/history', auth, async (req, res) => {
     try {
         const userId = req.user.id;
 
@@ -103,7 +103,7 @@ router.get('/chat/history', auth.required, async (req, res) => {
  * GET /api/ai/analysis
  * Get AI analysis of user habits
  */
-router.get('/analysis', auth.optional, async (req, res) => {
+router.get('/analysis', optionalAuth, async (req, res) => {
     try {
         const { type = 'daily' } = req.query;
         const userId = req.user?.id || 'anonymous';
@@ -133,7 +133,7 @@ router.get('/analysis', auth.optional, async (req, res) => {
  * GET /api/ai/motivation
  * Get motivational message
  */
-router.get('/motivation', auth.optional, async (req, res) => {
+router.get('/motivation', optionalAuth, async (req, res) => {
     try {
         const motivations = [
             '🔥 "Suffer the pain of discipline or suffer the pain of regret." - Warrior Ethos',
@@ -162,7 +162,7 @@ router.get('/motivation', auth.optional, async (req, res) => {
  * GET /api/ai/recommendations
  * Get habit recommendations from AI
  */
-router.get('/recommendations', auth.optional, async (req, res) => {
+router.get('/recommendations', optionalAuth, async (req, res) => {
     try {
         const recommendations = [
             {
@@ -226,7 +226,7 @@ router.get('/recommendations', auth.optional, async (req, res) => {
  * POST /api/ai/quick-action
  * Handle quick action requests
  */
-router.post('/quick-action', auth.optional, async (req, res) => {
+router.post('/quick-action', optionalAuth, async (req, res) => {
     try {
         const { action } = req.body;
         const userId = req.user?.id || 'anonymous';

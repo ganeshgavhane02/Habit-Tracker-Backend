@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+    <meta name="description" content="Warrior Protocol - Elite AI Edition. A professional habit tracking and productivity dashboard with cinematic 3D visuals and AI assistance.">
+    <meta name="keywords" content="productivity, habits, tracking, AI, dashboard, 3D, visualization">
+    <meta name="author" content="Warrior Protocol">
+    <meta property="og:title" content="Warrior Protocol | Elite AI Edition">
+    <meta property="og:description" content="Professional habit tracking with cinematic 3D visuals and AI assistance">
+    <meta property="og:type" content="website">
+    <title>Warrior Protocol | Elite AI Edition</title>
+    
+    <!-- Font Preloading -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&family=Clash+Display:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Performance Optimization -->
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&family=Clash+Display:wght@400;500;600;700;800&display=swap">
+    
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#0A0A0F">
+    <meta name="color-scheme" content="dark">
+    
+    <!-- Apple Touch Icon -->
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://warriorprotocol.com">
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+    
+    <!-- Performance Monitoring Script -->
+    <script>
+      // Performance monitoring
+      window.addEventListener('load', function() {
+        if ('performance' in window) {
+          const perfData = window.performance.timing;
+          const loadTime = perfData.loadEventEnd - perfData.navigationStart;
+          console.log(`Page loaded in ${loadTime}ms`);
+        }
+      });
+    </script>
+  </body>
+</html>

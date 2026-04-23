@@ -89,10 +89,10 @@ class SleepLog {
         MAX(EXTRACT(EPOCH FROM duration)/3600) as max_duration_hours
       FROM sleep_logs
       WHERE user_id = $1
-      AND date >= CURRENT_DATE - INTERVAL '${days} days'
+            AND date >= CURRENT_DATE - ($2::int * INTERVAL '1 day')
     `;
 
-        const result = await query(queryText, [userId]);
+                const result = await query(queryText, [userId, days]);
         return result.rows[0];
     }
 
@@ -102,12 +102,12 @@ class SleepLog {
       SELECT quality, COUNT(*) as count
       FROM sleep_logs
       WHERE user_id = $1
-      AND date >= CURRENT_DATE - INTERVAL '${days} days'
+            AND date >= CURRENT_DATE - ($2::int * INTERVAL '1 day')
       GROUP BY quality
       ORDER BY quality
     `;
 
-        const result = await query(queryText, [userId]);
+                const result = await query(queryText, [userId, days]);
         return result.rows;
     }
 }

@@ -118,10 +118,10 @@ class Habit {
       FROM habit_logs hl
       JOIN habits h ON hl.habit_id = h.id
       WHERE h.id = $1 AND h.user_id = $2
-      AND hl.date >= CURRENT_DATE - INTERVAL '${days} days'
+            AND hl.date >= CURRENT_DATE - ($3::int * INTERVAL '1 day')
     `;
 
-        const result = await query(queryText, [habitId, userId]);
+                const result = await query(queryText, [habitId, userId, days]);
         return result.rows[0];
     }
 }

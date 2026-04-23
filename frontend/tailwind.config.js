@@ -1,0 +1,162 @@
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  darkMode: 'class',
+  theme: {
+    extend: {
+      fontFamily: {
+        sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+        mono: ['JetBrains Mono', 'SF Mono', 'Monaco', 'Consolas', 'monospace'],
+        display: ['Clash Display', 'Inter', 'SF Pro Display', 'system-ui', 'sans-serif'],
+        heading: ['Clash Display', 'Inter', 'system-ui', 'sans-serif'],
+        body: ['Inter', 'system-ui', 'sans-serif'],
+      },
+      colors: {
+        // Landon Norris / McLaren inspired palette
+        background: {
+          DEFAULT: '#0A0A0F',
+          50: '#1A1A24',
+          100: '#15151E',
+          200: '#101018',
+          300: '#0A0A0F',
+          400: '#05050A',
+        },
+        primary: {
+          DEFAULT: '#FF5800', // McLaren Papaya Orange
+          50: '#FFF7F0',
+          100: '#FFE8D6',
+          200: '#FFD1AD',
+          300: '#FFB380',
+          400: '#FF944D',
+          500: '#FF5800',
+          600: '#E04E00',
+          700: '#C24400',
+          800: '#A33A00',
+          900: '#853000',
+        },
+        accent: {
+          DEFAULT: '#004BA8', // McLaren Blue
+          50: '#E6F0FF',
+          100: '#CCE0FF',
+          200: '#99C2FF',
+          300: '#66A3FF',
+          400: '#3385FF',
+          500: '#004BA8',
+          600: '#003D8A',
+          700: '#002F6B',
+          800: '#00214D',
+          900: '#00132E',
+        },
+        surface: {
+          DEFAULT: 'rgba(255, 255, 255, 0.05)',
+          glass: 'rgba(255, 255, 255, 0.08)',
+          card: 'rgba(255, 255, 255, 0.03)',
+          border: 'rgba(255, 255, 255, 0.1)',
+        },
+        text: {
+          primary: '#FFFFFF',
+          secondary: '#D1D1D6',
+          tertiary: '#8E8E93',
+          inverse: '#0A0A0F',
+        },
+      },
+      fontSize: {
+        'xs': ['0.75rem', { lineHeight: '1rem' }],
+        'sm': ['0.875rem', { lineHeight: '1.25rem' }],
+        'base': ['1rem', { lineHeight: '1.5rem' }],
+        'lg': ['1.125rem', { lineHeight: '1.75rem' }],
+        'xl': ['1.25rem', { lineHeight: '1.75rem' }],
+        '2xl': ['1.5rem', { lineHeight: '2rem' }],
+        '3xl': ['1.875rem', { lineHeight: '2.25rem' }],
+        '4xl': ['2.25rem', { lineHeight: '2.5rem' }],
+        '5xl': ['3rem', { lineHeight: '1' }],
+        '6xl': ['3.75rem', { lineHeight: '1' }],
+        '7xl': ['4.5rem', { lineHeight: '1' }],
+        '8xl': ['6rem', { lineHeight: '1' }],
+        '9xl': ['8rem', { lineHeight: '1' }],
+      },
+      animation: {
+        'float': 'float 6s ease-in-out infinite',
+        'float-slow': 'float 8s ease-in-out infinite',
+        'float-fast': 'float 4s ease-in-out infinite',
+        'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
+        'pulse-subtle': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'slide-up': 'slideUp 0.3s ease-out',
+        'slide-down': 'slideDown 0.3s ease-out',
+        'fade-in': 'fadeIn 0.5s ease-out',
+        'blob': 'blob 7s infinite',
+        'blob-slow': 'blob 10s infinite',
+        'shimmer': 'shimmer 2s infinite linear',
+        'bounce-slow': 'bounce 3s infinite',
+        'spin-slow': 'spin 8s linear infinite',
+        'ping-slow': 'ping 3s cubic-bezier(0, 0, 0.2, 1) infinite',
+        'wave': 'wave 1.5s ease-in-out infinite',
+        'gradient-shift': 'gradientShift 3s ease infinite',
+        'text-glow': 'textGlow 2s ease-in-out infinite alternate',
+      },
+      keyframes: {
+        float: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-20px)' },
+        },
+        'pulse-glow': {
+          '0%, 100%': { opacity: 1 },
+          '50%': { opacity: 0.7 },
+        },
+        slideUp: {
+          '0%': { transform: 'translateY(10px)', opacity: 0 },
+          '100%': { transform: 'translateY(0)', opacity: 1 },
+        },
+        slideDown: {
+          '0%': { transform: 'translateY(-10px)', opacity: 0 },
+          '100%': { transform: 'translateY(0)', opacity: 1 },
+        },
+        fadeIn: {
+          '0%': { opacity: 0 },
+          '100%': { opacity: 1 },
+        },
+        blob: {
+          '0%': { transform: 'translate(0px, 0px) scale(1)' },
+          '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+          '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+          '100%': { transform: 'translate(0px, 0px) scale(1)' },
+        },
+        shimmer: {
+          '0%': { backgroundPosition: '-1000px 0' },
+          '100%': { backgroundPosition: '1000px 0' },
+        },
+        wave: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-10px)' },
+        },
+        gradientShift: {
+          '0%, 100%': { backgroundPosition: '0% 50%' },
+          '50%': { backgroundPosition: '100% 50%' },
+        },
+        textGlow: {
+          '0%': { textShadow: '0 0 10px rgba(124, 58, 237, 0.5)' },
+          '100%': { textShadow: '0 0 20px rgba(124, 58, 237, 0.8), 0 0 30px rgba(6, 182, 212, 0.6)' },
+        },
+      },
+      backdropBlur: {
+        xs: '2px',
+        sm: '4px',
+        md: '8px',
+        lg: '12px',
+        xl: '16px',
+        '2xl': '24px',
+        '3xl': '32px',
+      },
+      boxShadow: {
+        'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
+        'glass-inset': 'inset 0 2px 4px 0 rgba(255, 255, 255, 0.06)',
+        'glow': '0 0 20px rgba(124, 58, 237, 0.5)',
+        'glow-accent': '0 0 20px rgba(6, 182, 212, 0.5)',
+      },
+    },
+  },
+  plugins: [],
+}

@@ -65,17 +65,21 @@ app.use(errorHandler);
 
 // Connect to database and start server
 const startServer = async () => {
-    try {
-        await connectDB();
-        console.log('✅ Database connected successfully');
-
+    const listen = () => {
         app.listen(PORT, () => {
             console.log(`🚀 Server running on port ${PORT}`);
             console.log(`📊 Health check: http://localhost:${PORT}/health`);
         });
+    };
+
+    try {
+        await connectDB();
+        console.log('✅ Database connected successfully');
+        listen();
     } catch (error) {
-        console.error('❌ Failed to start server:', error);
-        process.exit(1);
+        console.warn('⚠️ Database unavailable, starting API without database connectivity.');
+        console.error('Database startup error:', error.message || error);
+        listen();
     }
 };
 

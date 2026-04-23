@@ -535,7 +535,7 @@
         <div class="stat-card danger">
             <div class="stat-value" id="totalHoursSlept">0</div>
             <div class="stat-label">Sleep Hours</div>
-            <div class="stat-change">Last 7 days avg</div>
+            <div class="stat-change">Last 30 days avg</div>
         </div>
     </div>
 
@@ -710,11 +710,46 @@
                 <div style="font-size: 3rem; font-weight: 800; color: var(--primary); margin-bottom: var(--spacing-md);"
                     id="consistencyScore">87</div>
                 <div class="progress-bar">
-                    <div class="progress-bar-fill" style="width: 87%"></div>
+                    <div class="progress-bar-fill" id="consistencyBar" style="width: 87%"></div>
                 </div>
-                <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: var(--spacing-md);">You're on
-                    fire! Keep it up! 🔥</p>
+                <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: var(--spacing-md);"
+                    id="consistencyMessage">Strong momentum. Keep your streak alive.</p>
             </div>
+        </div>
+
+        <!-- Weekday Consistency Radar -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <span class="card-icon">🧭</span>
+                    Weekday Consistency Radar
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="weekdayRadarChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Risk Alerts -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <span class="card-icon">⚠️</span>
+                    Habit Risk Alerts
+                </div>
+            </div>
+            <ul class="list" id="riskAlerts"></ul>
+        </div>
+
+        <!-- Coach Recommendations -->
+        <div class="card dashboard-full">
+            <div class="card-header">
+                <div class="card-title">
+                    <span class="card-icon">🧠</span>
+                    Consistency Coach Recommendations
+                </div>
+            </div>
+            <ul class="list" id="coachRecommendations"></ul>
         </div>
     </div>
 
@@ -733,34 +768,87 @@
                     }
                 });
 
-                if (!response.ok) throw new Error('Failed to fetch analytics');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch analytics');
+                }
 
-                analyticsData = await response.json();
-                console.log('Analytics Data:', analyticsData);
-                return analyticsData.data || analyticsData;
+                const payload = await response.json();
+                return payload.data || payload;
             } catch (error) {
                 console.error('Error fetching analytics:', error);
-                // Return mock data for demonstration
                 return getMockData();
             }
         }
 
         function getMockData() {
+            const dailyConsistency = Array.from({ length: 28 }, (_, i) => {
+                const date = new Date();
+                date.setDate(date.getDate() - (27 - i));
+                const percentage = 60 + Math.round(Math.sin(i / 4) * 20) + Math.round(Math.random() * 8);
+                return {
+                    date: date.toISOString().split('T')[0],
+                    completed: Math.max(1, Math.round((percentage / 100) * 6)),
+                    total: 6,
+                    percentage: Math.max(0, Math.min(100, percentage))
+                };
+            });
+
             return {
                 totalHabits: 6,
-                avgCompletionRate: 85.3,
-                currentStreak: 12,
-                sleepStats: { avgHours: 6.8 },
+                avgCompletionRate: 79.4,
+                currentStreak: 9,
+                sleepStats: {
+                    avgHours: 7.1,
+                    qualityDistribution: [
+                        { quality: 2, count: 3 },
+                        { quality: 3, count: 7 },
+                        { quality: 4, count: 12 },
+                        { quality: 5, count: 6 }
+                    ]
+                },
                 habitStats: [
-                    { habit: 'Morning Exercise', completion_rate: 95 },
+                    { habit: 'Morning Exercise', completion_rate: 84 },
                     { habit: 'Reading', completion_rate: 88 },
-                    { habit: 'Meditation', completion_rate: 76 },
-                    { habit: 'Journaling', completion_rate: 82 },
-                    { habit: 'Coding Practice', completion_rate: 90 }
+                    { habit: 'Meditation', completion_rate: 71 },
+                    { habit: 'Journaling', completion_rate: 62 },
+                    { habit: 'Coding Practice', completion_rate: 91 }
                 ],
                 dailyBreakdown: {
                     completed: 4,
-                    total: 6
+                    total: 6,
+                    percentage: 67
+                },
+                weeklySummary: [
+                    { day: 'Monday', completed: 4, total: 6, percentage: 67 },
+                    { day: 'Tuesday', completed: 5, total: 6, percentage: 83 },
+                    { day: 'Wednesday', completed: 4, total: 6, percentage: 67 },
+                    { day: 'Thursday', completed: 6, total: 6, percentage: 100 },
+                    { day: 'Friday', completed: 4, total: 6, percentage: 67 },
+                    { day: 'Saturday', completed: 3, total: 6, percentage: 50 },
+                    { day: 'Sunday', completed: 5, total: 6, percentage: 83 }
+                ],
+                consistencyScore: 81,
+                consistencyIntelligence: {
+                    momentum: 4,
+                    dailyConsistency,
+                    weekdayPerformance: [
+                        { day: 'Sunday', score: 74 },
+                        { day: 'Monday', score: 80 },
+                        { day: 'Tuesday', score: 85 },
+                        { day: 'Wednesday', score: 78 },
+                        { day: 'Thursday', score: 83 },
+                        { day: 'Friday', score: 76 },
+                        { day: 'Saturday', score: 71 }
+                    ],
+                    habitRiskAlerts: [
+                        { habitName: 'Journaling', completionRate: 43, missedStreak: 3, severity: 'medium' },
+                        { habitName: 'Meditation', completionRate: 48, missedStreak: 2, severity: 'low' }
+                    ],
+                    coachRecommendations: [
+                        'Protect your morning routine. Your first completed habit predicts a stronger day.',
+                        'Journaling is at risk. Cut it down to 2 minutes for this week.',
+                        'Keep sleep above 7 hours to preserve your completion rate.'
+                    ]
                 }
             };
         }
@@ -770,12 +858,13 @@
             document.getElementById('totalHabits').textContent = data.totalHabits || 0;
             document.getElementById('avgCompletion').textContent = Math.round(data.avgCompletionRate || 0) + '%';
             document.getElementById('currentStreak').textContent = data.currentStreak || 0;
-            document.getElementById('totalHoursSlept').textContent = (data.sleepStats?.avgHours || 0).toFixed(1);
+
+            const avgSleepHours = data.sleepStats?.avgHours || data.sleepStats?.avg_duration_hours || 0;
+            document.getElementById('totalHoursSlept').textContent = Number(avgSleepHours).toFixed(1);
 
             const performancePercent = Math.round(data.avgCompletionRate || 0);
             document.getElementById('performancePercent').textContent = performancePercent + '%';
 
-            // Update performance ring
             const circle = document.getElementById('performanceRing');
             const radius = 54;
             const circumference = 2 * Math.PI * radius;
@@ -787,104 +876,172 @@
             const dailyPercent = daily.total > 0 ? (daily.completed / daily.total) * 100 : 0;
             document.getElementById('dailyBar').style.width = dailyPercent + '%';
 
-            document.getElementById('consistencyScore').textContent = performancePercent;
+            const consistencyScore = Math.round(data.consistencyScore || performancePercent);
+            document.getElementById('consistencyScore').textContent = consistencyScore;
+            document.getElementById('consistencyBar').style.width = consistencyScore + '%';
+            document.getElementById('consistencyMessage').textContent = getConsistencyMessage(consistencyScore, data.consistencyIntelligence?.momentum || 0);
+        }
+
+        function getConsistencyMessage(score, momentum) {
+            if (score >= 85 && momentum >= 0) {
+                return 'Elite consistency. Keep your current rhythm.';
+            }
+            if (score >= 70) {
+                return momentum >= 0
+                    ? 'Strong baseline. Add one small stretch goal.'
+                    : 'Good baseline, but momentum is slipping. Simplify one habit today.';
+            }
+            return 'Rebuild mode: focus on your top 2 habits this week.';
         }
 
         function updateTopHabits(habits) {
-            const sorted = (habits || []).sort((a, b) =>
-                parseFloat(b.completion_rate || 0) - parseFloat(a.completion_rate || 0)
-            ).slice(0, 5);
+            const sorted = (habits || [])
+                .sort((a, b) => parseFloat(b.completion_rate || 0) - parseFloat(a.completion_rate || 0))
+                .slice(0, 5);
 
-            const html = sorted.map(habit => `
+            const html = sorted.map((habit) => `
                 <li class="list-item">
                     <span class="list-item-label">${habit.habit}</span>
                     <span class="list-item-value">${Math.round(parseFloat(habit.completion_rate || 0))}%</span>
                 </li>
             `).join('');
 
-            document.getElementById('topHabits').innerHTML = html;
+            document.getElementById('topHabits').innerHTML = html || '<li class="list-item"><span class="list-item-label">No habits yet</span><span class="list-item-value">-</span></li>';
         }
 
-        function generateActivityHeatmap() {
-            const container = document.getElementById('activityHeatmap');
-            const days = [];
-
-            for (let i = 27; i >= 0; i--) {
-                const date = new Date();
-                date.setDate(date.getDate() - i);
-                const intensity = Math.floor(Math.random() * 3); // 0, 1, 2
-                const intensityClass = intensity === 0 ? 'low' : intensity === 1 ? 'medium' : 'high';
-                const day = Math.random() > 0.3 ? Math.ceil((intensity + 1) * 2) : '0';
-
-                days.push(`<div class="heatmap-cell ${intensityClass}" title="Day ${28 - i}: ${day} habits">${day}</div>`);
+        function updateWeeklySummary(weeklySummary = []) {
+            const list = document.getElementById('weeklySummary');
+            if (!weeklySummary.length) {
+                list.innerHTML = '<li class="list-item"><span class="list-item-label">No data for this week</span><span class="list-item-value">-</span></li>';
+                return;
             }
 
-            container.innerHTML = days.join('');
+            const html = weeklySummary.map((entry) => {
+                const badgeClass = entry.percentage >= 80
+                    ? 'badge-success'
+                    : entry.percentage >= 60 ? 'badge-warning' : 'badge-danger';
+
+                return `
+                    <li class="list-item">
+                        <span class="list-item-label">${entry.day}</span>
+                        <span class="list-item-value" style="display: flex; gap: var(--spacing-sm); align-items: center;">
+                            ${entry.completed}/${entry.total}
+                            <span class="list-item-badge ${badgeClass}">${entry.percentage}%</span>
+                        </span>
+                    </li>
+                `;
+            }).join('');
+
+            list.innerHTML = html;
+        }
+
+        function updateRiskAlerts(alerts = []) {
+            const list = document.getElementById('riskAlerts');
+            if (!alerts.length) {
+                list.innerHTML = '<li class="list-item"><span class="list-item-label">No high-risk habits detected</span><span class="list-item-value">Stable</span></li>';
+                return;
+            }
+
+            const html = alerts.map((alert) => {
+                const badgeClass = alert.severity === 'high'
+                    ? 'badge-danger'
+                    : alert.severity === 'medium' ? 'badge-warning' : 'badge-success';
+                const severityText = `${alert.severity.toUpperCase()} RISK`;
+
+                return `
+                    <li class="list-item">
+                        <span class="list-item-label">${alert.habitName}</span>
+                        <span class="list-item-value" style="display: flex; gap: var(--spacing-sm); align-items: center;">
+                            ${alert.completionRate}%
+                            <span class="list-item-badge ${badgeClass}">${severityText}</span>
+                        </span>
+                    </li>
+                `;
+            }).join('');
+
+            list.innerHTML = html;
+        }
+
+        function updateCoachRecommendations(recommendations = []) {
+            const list = document.getElementById('coachRecommendations');
+            if (!recommendations.length) {
+                list.innerHTML = '<li class="list-item"><span class="list-item-label">No recommendations available yet</span></li>';
+                return;
+            }
+
+            list.innerHTML = recommendations
+                .map((tip) => `<li class="list-item"><span class="list-item-label">${tip}</span></li>`)
+                .join('');
+        }
+
+        function generateActivityHeatmap(dailyConsistency = []) {
+            const container = document.getElementById('activityHeatmap');
+            const source = dailyConsistency.length ? dailyConsistency : getMockData().consistencyIntelligence.dailyConsistency;
+
+            const cells = source.slice(-28).map((day) => {
+                const intensityClass = day.percentage >= 75
+                    ? 'high'
+                    : day.percentage >= 40 ? 'medium' : 'low';
+                return `<div class="heatmap-cell ${intensityClass}" title="${day.date}: ${day.completed}/${day.total} habits">${day.completed}</div>`;
+            });
+
+            container.innerHTML = cells.join('');
         }
 
         // ===== CHART INITIALIZATION =====
         function initCharts(data) {
-            // Destroy existing charts
-            Object.values(charts).forEach(chart => chart?.destroy?.());
+            Object.values(charts).forEach((chart) => chart?.destroy?.());
             charts = {};
 
-            // Trend Chart
+            const theme = getChartTheme();
+            const dailyConsistency = data.consistencyIntelligence?.dailyConsistency || [];
+
             charts.trend = new Chart(document.getElementById('trendChart'), {
                 type: 'line',
                 data: {
-                    labels: ['Day 1', 'Day 5', 'Day 10', 'Day 15', 'Day 20', 'Day 25', 'Day 30'],
-                    datasets: (data.habitStats || []).slice(0, 3).map((habit, idx) => ({
-                        label: habit.habit,
-                        data: [
-                            Math.random() * 40 + 50,
-                            Math.random() * 40 + 50,
-                            Math.random() * 40 + 50,
-                            Math.random() * 40 + 50,
-                            Math.random() * 40 + 50,
-                            Math.random() * 40 + 50,
-                            Math.random() * 40 + 50
-                        ],
-                        borderColor: ['#6366f1', '#0ea5e9', '#22c55e'][idx],
-                        backgroundColor: ['rgba(99,102,241,0.05)', 'rgba(14,165,233,0.05)', 'rgba(34,197,94,0.05)'][idx],
+                    labels: dailyConsistency.map((d) => d.date.slice(5)),
+                    datasets: [{
+                        label: 'Daily Consistency %',
+                        data: dailyConsistency.map((d) => d.percentage),
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99, 102, 241, 0.08)',
                         borderWidth: 3,
                         fill: true,
-                        tension: 0.4,
-                        pointRadius: 5,
-                        pointBackgroundColor: ['#6366f1', '#0ea5e9', '#22c55e'][idx],
-                        pointBorderColor: '#fff',
-                        pointBorderWidth: 2
-                    }))
+                        tension: 0.35,
+                        pointRadius: 2
+                    }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: {
-                            display: true,
-                            position: 'top'
-                        }
+                        legend: { labels: { color: theme.textColor } }
                     },
                     scales: {
+                        x: {
+                            ticks: { color: theme.textColor }
+                        },
                         y: {
                             beginAtZero: true,
                             max: 100,
-                            ticks: { callback: value => value + '%' }
+                            ticks: {
+                                callback: (value) => value + '%',
+                                color: theme.textColor
+                            },
+                            grid: { color: theme.gridColor }
                         }
                     }
                 }
             });
 
-            // Comparison Chart
             charts.comparison = new Chart(document.getElementById('comparisonChart'), {
                 type: 'bar',
                 data: {
-                    labels: (data.habitStats || []).map(h => h.habit),
+                    labels: (data.habitStats || []).map((h) => h.habit),
                     datasets: [{
                         label: 'Completion Rate (%)',
-                        data: (data.habitStats || []).map(h => parseFloat(h.completion_rate || 0)),
-                        backgroundColor: [
-                            '#6366f1', '#0ea5e9', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6'
-                        ],
+                        data: (data.habitStats || []).map((h) => parseFloat(h.completion_rate || 0)),
+                        backgroundColor: ['#6366f1', '#0ea5e9', '#22c55e', '#f59e0b', '#ef4444', '#0891b2'],
                         borderRadius: 8,
                         borderSkipped: false
                     }]
@@ -899,15 +1056,22 @@
                     scales: {
                         x: {
                             max: 100,
-                            ticks: { callback: value => value + '%' }
+                            ticks: {
+                                callback: (value) => value + '%',
+                                color: theme.textColor
+                            },
+                            grid: { color: theme.gridColor }
+                        },
+                        y: {
+                            ticks: { color: theme.textColor },
+                            grid: { color: theme.gridColor }
                         }
                     }
                 }
             });
 
-            // Breakdown Chart
-            const habitNames = (data.habitStats || []).map(h => h.habit);
-            const completionRates = (data.habitStats || []).map(h => parseFloat(h.completion_rate || 0));
+            const habitNames = (data.habitStats || []).map((h) => h.habit);
+            const completionRates = (data.habitStats || []).map((h) => parseFloat(h.completion_rate || 0));
 
             charts.breakdown = new Chart(document.getElementById('breakdownChart'), {
                 type: 'doughnut',
@@ -915,11 +1079,8 @@
                     labels: habitNames,
                     datasets: [{
                         data: completionRates,
-                        backgroundColor: [
-                            '#6366f1', '#0ea5e9', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6'
-                        ],
-                        borderColor: '#fff',
-                        borderWidth: 2
+                        backgroundColor: ['#6366f1', '#0ea5e9', '#22c55e', '#f59e0b', '#ef4444', '#0891b2'],
+                        borderWidth: 0
                     }]
                 },
                 options: {
@@ -927,20 +1088,20 @@
                     maintainAspectRatio: false,
                     plugins: {
                         legend: {
-                            position: 'bottom'
+                            position: 'bottom',
+                            labels: { color: theme.textColor }
                         }
                     }
                 }
             });
 
-            // Sleep Quality Chart
             charts.sleep = new Chart(document.getElementById('sleepChart'), {
                 type: 'bar',
                 data: {
-                    labels: ['Poor', 'Fair', 'Good', 'Excellent'],
+                    labels: ['Poor (1-2)', 'Fair (3)', 'Good (4)', 'Excellent (5)'],
                     datasets: [{
-                        label: 'Days',
-                        data: [2, 4, 12, 12],
+                        label: 'Nights',
+                        data: buildSleepBucketCounts(data.sleepStats?.qualityDistribution || []),
                         backgroundColor: ['#ef4444', '#f59e0b', '#22c55e', '#0ea5e9'],
                         borderRadius: 8,
                         borderSkipped: false
@@ -949,10 +1110,85 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { y: { beginAtZero: true } }
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: theme.textColor },
+                            grid: { color: theme.gridColor }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: theme.textColor },
+                            grid: { color: theme.gridColor }
+                        }
+                    }
                 }
             });
+
+            const weekdayData = data.consistencyIntelligence?.weekdayPerformance || [];
+            charts.weekdayRadar = new Chart(document.getElementById('weekdayRadarChart'), {
+                type: 'radar',
+                data: {
+                    labels: weekdayData.map((item) => item.day.slice(0, 3)),
+                    datasets: [{
+                        label: 'Weekday Consistency',
+                        data: weekdayData.map((item) => item.score),
+                        borderColor: '#0ea5e9',
+                        backgroundColor: 'rgba(14, 165, 233, 0.25)',
+                        pointBackgroundColor: '#0ea5e9',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: theme.textColor } }
+                    },
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 100,
+                            angleLines: { color: theme.gridColor },
+                            grid: { color: theme.gridColor },
+                            pointLabels: { color: theme.textColor },
+                            ticks: {
+                                color: theme.textColor,
+                                backdropColor: 'transparent'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function buildSleepBucketCounts(distribution) {
+            const buckets = [0, 0, 0, 0];
+            distribution.forEach((entry) => {
+                const quality = Number(entry.quality);
+                const count = Number(entry.count || 0);
+
+                if (quality <= 2) {
+                    buckets[0] += count;
+                } else if (quality === 3) {
+                    buckets[1] += count;
+                } else if (quality === 4) {
+                    buckets[2] += count;
+                } else {
+                    buckets[3] += count;
+                }
+            });
+            return buckets;
+        }
+
+        function getChartTheme() {
+            const styles = getComputedStyle(document.body);
+            return {
+                textColor: styles.getPropertyValue('--text-secondary').trim() || '#6b7280',
+                gridColor: styles.getPropertyValue('--border-color').trim() || '#e5e7eb'
+            };
         }
 
         // ===== THEME TOGGLE =====
@@ -960,7 +1196,6 @@
             document.body.classList.toggle('dark-mode');
             localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
 
-            // Re-init charts with new theme
             if (analyticsData) {
                 initCharts(analyticsData);
             }
@@ -969,31 +1204,32 @@
         // ===== REFRESH DATA =====
         async function refreshData() {
             const data = await fetchAnalytics();
+            analyticsData = data;
+            renderDashboard(data);
+        }
+
+        function renderDashboard(data) {
             updateStatistics(data);
             updateTopHabits(data.habitStats || []);
-            generateActivityHeatmap();
+            updateWeeklySummary(data.weeklySummary || []);
+            updateRiskAlerts(data.consistencyIntelligence?.habitRiskAlerts || []);
+            updateCoachRecommendations(data.consistencyIntelligence?.coachRecommendations || []);
+            generateActivityHeatmap(data.consistencyIntelligence?.dailyConsistency || []);
             initCharts(data);
         }
 
         // ===== INITIALIZATION =====
         async function init() {
-            // Load theme preference
             if (localStorage.getItem('theme') === 'dark') {
                 document.body.classList.add('dark-mode');
             }
 
-            // Load data and render
             analyticsData = await fetchAnalytics();
-            updateStatistics(analyticsData);
-            updateTopHabits(analyticsData.habitStats || []);
-            generateActivityHeatmap();
-            initCharts(analyticsData);
+            renderDashboard(analyticsData);
 
-            // Refresh data periodically (every 30 seconds)
             setInterval(refreshData, 30000);
         }
 
-        // Start on load
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', init);
         } else {

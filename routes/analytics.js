@@ -70,10 +70,30 @@ router.get('/dashboard', async (req, res) => {
         }
 
         // Calculate sleep hours average
-        const avgSleepHours = sleepStats.avg_hours ? parseFloat(sleepStats.avg_hours) : 0;
+        const avgSleepHours = sleepStats.avg_duration_hours
+            ? parseFloat(sleepStats.avg_duration_hours)
+            : 0;
 
         // Build weekly summary
-        const weeklySummary = buildWeeklySummary(habits, userId);
+        const weeklySummary = await buildWeeklySummary(habits, userId);
+        const dailyConsistency = await buildDailyConsistencySeries(habits, userId, 28);
+        const weekdayPerformance = buildWeekdayPerformance(dailyConsistency);
+        const habitRiskAlerts = await buildHabitRiskAlerts(habits, userId, 14);
+
+        const momentum = calculateMomentum(dailyConsistency);
+        const streakScore = Math.min(currentStreak * 5, 100);
+        const sleepScore = Math.min((avgSleepHours / 8) * 100, 100);
+        const consistencyScore = Math.round(
+            clamp((avgCompletionRate * 0.7) + (streakScore * 0.2) + (sleepScore * 0.1) + momentum, 0, 100)
+        );
+
+        const coachRecommendations = buildCoachRecommendations({
+            avgCompletionRate,
+            currentStreak,
+            avgSleepHours,
+            momentum,
+            habitRiskAlerts
+        });
 
         res.json({
             success: true,
@@ -93,7 +113,14 @@ router.get('/dashboard', async (req, res) => {
                     percentage: todayTotal > 0 ? Math.round((todayCompleted / todayTotal) * 100) : 0
                 },
                 weeklySummary,
-                consistencyScore: Math.round(avgCompletionRate)
+                consistencyScore,
+                consistencyIntelligence: {
+                    dailyConsistency,
+                    weekdayPerformance,
+                    habitRiskAlerts,
+                    momentum,
+                    coachRecommendations
+                }
             }
         });
     } catch (error) {
@@ -234,6 +261,174 @@ async function buildWeeklySummary(habits, userId) {
     }
 
     return weeklySummary;
+}
+
+async function buildDailyConsistencySeries(habits, userId, days = 28) {
+    const today = new Date();
+    const startDate = new Date(today);
+    startDate.setDate(today.getDate() - (days - 1));
+
+    const startDateStr = formatDate(startDate);
+    const endDateStr = formatDate(today);
+
+    const habitLogMaps = await Promise.all(
+        habits.map(async (habit) => {
+            const logs = await Habit.getLogs(habit.id, userId, startDateStr, endDateStr);
+            const statusByDate = logs.reduce((acc, log) => {
+                acc[log.date] = log.status;
+                return acc;
+            }, {});
+
+            return {
+                habitId: habit.id,
+                statusByDate
+            };
+        })
+    );
+
+    const series = [];
+    for (let dayOffset = days - 1; dayOffset >= 0; dayOffset--) {
+        const date = new Date(today);
+        date.setDate(today.getDate() - dayOffset);
+        const dateStr = formatDate(date);
+
+        let completed = 0;
+        for (const habitMap of habitLogMaps) {
+            if (habitMap.statusByDate[dateStr] === 'completed') {
+                completed++;
+            }
+        }
+
+        const total = habits.length;
+        series.push({
+            date: dateStr,
+            completed,
+            total,
+            percentage: total > 0 ? Math.round((completed / total) * 100) : 0
+        });
+    }
+
+    return series;
+}
+
+function buildWeekdayPerformance(dailyConsistency) {
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const sums = [0, 0, 0, 0, 0, 0, 0];
+    const counts = [0, 0, 0, 0, 0, 0, 0];
+
+    dailyConsistency.forEach((day) => {
+        const index = new Date(day.date).getDay();
+        sums[index] += day.percentage;
+        counts[index] += 1;
+    });
+
+    return dayNames.map((name, index) => ({
+        day: name,
+        score: counts[index] > 0 ? Math.round(sums[index] / counts[index]) : 0
+    }));
+}
+
+async function buildHabitRiskAlerts(habits, userId, days = 14) {
+    const endDate = new Date();
+    const startDate = new Date(endDate);
+    startDate.setDate(endDate.getDate() - (days - 1));
+
+    const startDateStr = formatDate(startDate);
+    const endDateStr = formatDate(endDate);
+
+    const alerts = [];
+    for (const habit of habits) {
+        const logs = await Habit.getLogs(habit.id, userId, startDateStr, endDateStr);
+        const totalLogs = logs.length;
+        const completedLogs = logs.filter(log => log.status === 'completed').length;
+        const completionRate = totalLogs > 0 ? (completedLogs / totalLogs) * 100 : 0;
+
+        // Logs are returned descending; this calculates active miss streak from latest entries.
+        let missedStreak = 0;
+        for (const log of logs) {
+            if (log.status === 'missed') {
+                missedStreak++;
+            } else {
+                break;
+            }
+        }
+
+        if (totalLogs > 0 && (completionRate < 50 || missedStreak >= 3)) {
+            let severity = 'medium';
+            if (completionRate < 30 || missedStreak >= 5) {
+                severity = 'high';
+            }
+
+            alerts.push({
+                habitId: habit.id,
+                habitName: habit.name,
+                completionRate: Math.round(completionRate),
+                missedStreak,
+                severity
+            });
+        }
+    }
+
+    return alerts
+        .sort((a, b) => {
+            if (a.severity === b.severity) {
+                return a.completionRate - b.completionRate;
+            }
+            const rank = { high: 3, medium: 2, low: 1 };
+            return rank[b.severity] - rank[a.severity];
+        })
+        .slice(0, 5);
+}
+
+function buildCoachRecommendations({ avgCompletionRate, currentStreak, avgSleepHours, momentum, habitRiskAlerts }) {
+    const recommendations = [];
+
+    if (avgCompletionRate < 60) {
+        recommendations.push('Reduce active habits by 1-2 for one week to rebuild execution confidence.');
+    }
+
+    if (currentStreak < 3) {
+        recommendations.push('Use a 2-minute starter action for each habit to restart your streak quickly.');
+    }
+
+    if (avgSleepHours > 0 && avgSleepHours < 7) {
+        recommendations.push('Improve bedtime consistency. Sleep below 7 hours is likely hurting daytime habit completion.');
+    }
+
+    if (momentum < 0) {
+        recommendations.push('Your 7-day momentum is negative. Focus on your top 3 habits only for the next 5 days.');
+    }
+
+    if (habitRiskAlerts.length > 0) {
+        recommendations.push(`Prioritize recovery for "${habitRiskAlerts[0].habitName}" with a simpler daily target this week.`);
+    }
+
+    if (recommendations.length === 0) {
+        recommendations.push('Excellent consistency. Add one stretch-goal habit only if your score stays above 80 for 2 weeks.');
+    }
+
+    return recommendations.slice(0, 4);
+}
+
+function calculateMomentum(dailyConsistency) {
+    if (dailyConsistency.length < 14) {
+        return 0;
+    }
+
+    const latest7 = dailyConsistency.slice(-7);
+    const previous7 = dailyConsistency.slice(-14, -7);
+    const latestAvg = latest7.reduce((sum, day) => sum + day.percentage, 0) / latest7.length;
+    const previousAvg = previous7.reduce((sum, day) => sum + day.percentage, 0) / previous7.length;
+
+    return Math.round((latestAvg - previousAvg) / 4);
+}
+
+function formatDate(date) {
+    return date.toISOString().split('T')[0];
+}
+
+function clamp(value, min, max) {
+    return Math.min(Math.max(value, min), max);
 }
 
 // Helper function to get week number
